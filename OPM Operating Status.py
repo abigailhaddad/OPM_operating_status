@@ -8,16 +8,22 @@ import pandas as pd
 from bs4 import BeautifulSoup 
 import requests
 import os
+#import json
 
-def get_operating_status_by_date(date):
-    url=f'https://www.opm.gov/xml/operatingstatus.xml?date={date}&markup=on'
-    response = requests.get(url)
-    # Extracting the source code of the page.
-    data = response.text
-    # Passing the source code to BeautifulSoup to create a BeautifulSoup object for it.
-    soup = BeautifulSoup(data, 'xml')
-    Status=soup.find('OperatingStatus').text
-    #ShortStatusMessage=soup.find('ShortStatusMessage').text
+def get_operating_status_by_date(date, JSON=True):
+    #Pulling from the XML API
+    if JSON==False:
+        url=f'https://www.opm.gov/xml/operatingstatus.xml?date={date}&markup=on'
+        response = requests.get(url)
+        data = response.text
+        soup = BeautifulSoup(data, 'xml')
+        Status=soup.find('OperatingStatus').text
+    #Pulling from the JSON API 
+    if JSON==True:
+        url=f"https://www.opm.gov/xml/operatingstatus.json?date={date}&markup=on"
+        response = requests.get(url)
+        cont = response.json()
+        Status=cont['StatusSummary']
     return(date, Status)
 
 def get_operating_status_by_date_range(begin_date, end_date):
@@ -34,10 +40,14 @@ def output_file(directory, begin_date, end_date):
     os.chdir(directory)
     name_of_file=f'Operating_Status{begin_date.replace("/","")}_to{end_date.replace("/","")}.xlsx'
     df.to_excel(name_of_file)
-    
-begin_date="05/01/2018"
+
+
+begin_date="07/01/2018"
 end_date="07/25/2018"
 directory=r"C:\Users\abhaddad\Documents\Learning More Python\API pull"
 
 output_file(directory, begin_date, end_date)
+
+
+
 
